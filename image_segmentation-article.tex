@@ -1,0 +1,31 @@
+\documentclass[english, parskip=half]{scrartcl}
+\usepackage[noamsthm, notheorems]{beamerarticle}
+\usepackage[%
+colorlinks=true, linkcolor=blue,
+pdfauthor={Gesina Schwalbe},
+pdftitle={Image Segmentation 2018 with Mask R-CNN},
+]{hyperref}
+
+\setjobnamebeamerversion{image_segmentation-beamer}
+
+\AtBeginDocument{\raggedbottom}
+
+% article specific settings
+\mode<article>{
+%\setcounter{tocdepth}{2}
+%\setcounter{secnumdepth}{2}
+\setkomafont{descriptionlabel}{\bfseries}
+\setkomafont{paragraph}{\normalfont\bfseries}
+
+\setbeamertemplate{block begin}{\paragraph{\insertblocktitle}}
+\setbeamertemplate{block end}{}
+
+\setbeamertemplate{block alerted begin}{\paragraph{\emph{\insertblocktitle}}}
+\setbeamertemplate{block alerted end}{}
+
+\setbeamertemplate{frametitle}{\subsubsection{\insertframetitle}}
+\setbeamertemplate{frame begin}{}
+\setbeamertemplate{frame end}{}
+}
+
+\input{image_segmentation}
