@@ -6,6 +6,10 @@
 
 \usepackage{fontspec}
 \usepackage[shorthands=off]{babel}
+\newcommand{\idest}{i.e.\ }
+\newcommand{\forexample}{e.g.\ }
+\newcommand{\Forexample}{E.g.\ }
+\newcommand{\suchthat}{s.t.\ }
 \usepackage{csquotes}
 \usepackage{lmodern}
 \usepackage{graphicx}
@@ -19,21 +23,21 @@
 
 
 % titlepage
-\title{Image Segmentation 2018}
+\mode<article>{
+  \subject{Seminar on Machine Learning, University of Regensburg}
+  }
+\title{Image Segmentation}
 \subtitle{with Mask R-CNN}
 \author{Gesina Schwalbe}
 \date{7th May 2018}
 \mode<article>{
-  \publishers{Seminar on Machine Learning, University of Regensburg\\
-    Supervisor: Justin Noel}
+  \publishers{Supervisor: \href{http://www.nullplug.org/}{Justin Noel}}
 }
-
 
 \newcommand{\R}{\mathds{R}}
 \newcommand{\IoU}{\text{\textbf{IoU}}}
 \newcommand{\reg}{\textit{reg}}
 \newcommand{\cls}{\textit{cls}}
-
 
 \begin{document}
 
@@ -53,57 +57,70 @@
   \item classification of each box
   \item pixel-mask for each box
   \end{itemize}
-  \mode<article>{for a given image containing none, one, or several
-    objects; if possible with more than 1fps.}
+  \mode<article>{for a given image that contains none, one, or several
+    objects---if possible with more than 1\,fps.}
   \begin{block}{Datasets}
-    \mode<article>{Some common datasets for the image segmentation
-      task, mostly associated with a couple of specific official
-      challenges, are}
+    \mode<article>{Some common labeled datasets for the image
+      segmentation task, mostly associated with a couple of specific
+      official challenges, are}
     \begin{itemize}
-    \item COCO % TODO link
-    \item ImageNet % TODO link
+    \item \href{http://cocodataset.org/}{COCO}
+    \item \href{http://www.image-net.org/}{ImageNet}
     \end{itemize}
+    \mode<article>{Have a look at one of these datasets for further
+      impressions on what the output is expected to look like.}
   \end{block}
 \end{frame}
 
-\begin{frame}[<only@+>][t]
+\begin{frame}[t]
   \frametitle{Applications}
-  \begin{itemize}
-  \item live detection of signs, obstacles in traffic
-    (\href{images/mask_rcnn_demonstration.mp4}{example video})
-  \item automatic street map enhancement
+  \begin{itemize}[<only@+>]
+  \item Live detection of signs, obstacles in traffic
+    (\href{https://www.youtube.com/watch?v=OOT3UIXZztE}{example video})
+  \item Automatic street map enhancement
+    \mode<article>{(see \autoref{mappingchallenge})}
     \begin{figure}
       \centering
       \includegraphics[width=0.5\textwidth]{mapping_challenge}
-      \mode<article>{
-        \caption{\href{https://github.com/crowdAI/crowdai-mapping-challenge-mask-rcnn}{Mapping
-            Challenge solution}}
+      \mode<article>{\caption{
+          Application of image segmentation:
+          \href{https://github.com/crowdAI/crowdai-mapping-challenge-mask-rcnn}{Mapping
+            Challenge solution}
+          \cite{mappingchallenge}
+          % MIT License
+        }\label{mappingchallenge}
       }
     \end{figure}
-  \item automatic evaluation of microscopy images
+  \item Automatic evaluation of microscopy images
+    \mode<article>{(see \autoref{nucleussegmentation})}
     \begin{figure}
       \centering
       \includegraphics[width=0.5\textwidth]{nucleus_segmentation}
-      \mode<article>{
-        \caption{\href{https://github.com/matterport/Mask_RCNN/blob/master/samples/nucleus}{Nucleus
-            segmentation}}
+      \mode<article>{\caption{
+          Application of image segmentation:
+          \href{https://github.com/matterport/Mask_RCNN/blob/master/samples/nucleus}{Nucleus
+            segmentation}
+          \cite{maskrcnnkeras}
+          % MIT License
+        }\label{nucleussegmentation}
       }
     \end{figure}
   \end{itemize}
 \end{frame}
 
+\subsection{Architectual Requirements}
 \begin{frame}[<+->]
-  \frametitle{Architectual Requirements}
+  \frametitle<presentation>{Architectual Requirements}
   \begin{itemize}
   \item Master natural images: large nets
   \item Learn and process fast/efficiently\\
-    (currently best: 32h wt. 8GPU learning; 5fps inference):
+    (currently best: 32\,h wt.\ 8\,GPU learning; 5\,fps inference):
     \begin{itemize}
-    \item special network components
+    \item Special network components
       \mode<article>{instead of only fully connected layers}
       (CNN, ResNe(X)t, FPN)
-    \item share many features (FPN, RPN)
-    \item parallelize tasks/components
+    \item Share many features (FPN, RPN)
+    \item Parallelize tasks/components
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -111,21 +128,23 @@
 \section{Architecture Components}
 \subsection{Convolutional Networks}
 \begin{frame}[<+->]
-  \frametitle{What}
+  \frametitle<presentation>{What}
+  \frametitle<article>{Key Features}
   \mode<article>{The main ingredient to convolutional networks,
-    convolutional layers, are very good at detecting and summarizing
-    local features in large data-spaces (e.g. corners, edges, patterns
-    in images, i.e. self-learned image-preprocessing). The key
-    features are
+    the convolutional layers, are very good at detecting and summarizing
+    local features in large data-spaces (\forexample corners, edges, patterns
+    in images---\idest self-learned image-preprocessing). The key
+    features of convolutional neural networks (CNNs) are
   }
   \begin{itemize}
   \item Feedforward neural network with only local connections
   \item Massive weight sharing
-  \item (often:) Downscaling of feature space:
+  \item Translation invariance
+    \mode<article>{(see anchor boxes later)}
+  \item (Often) Downscaling of feature space:
     \begin{itemize}
-    \item Translation invariance
-      \mode<article>{(see anchor boxes later)}
-    \item Multiple scale feature spaces available
+    \item More translation invariance
+    \item Multiple scale feature-spaces available
       \mode<article>{(see RPN anchor pyramid and FPN later)}
     \end{itemize}
   \end{itemize}
@@ -141,86 +160,122 @@
     measure of distance of coordinates gives a notion of surrounding
     area for each coordinate.
     
-    A convolution in machine learning is a}
-  linear map $\R^{n_1\times n_2\times \dotsb n_3} \to \R^{n_1\times
+    A convolution in machine learning is the following:}
+  Linear map $\R^{n_1\times n_2\times \dotsb n_3} \to \R^{n_1\times
     n_2\times \dotsb n_3}$ described by
   \begin{itemize}
   \item a fixed sliding window shape
-    \mode<article>{i.e. a $k_1\times\dotsb k_r$
+    \mode<article>{\idest a $k_1\times\dotsb\times k_r$
       grid (usually a square)}
   \item a window of that shape with a weight value at each coordinate,
     called the \emph{kernel}.
   \end{itemize}
   \mode<article>{
     The output at a coordinate is given by the scalar product of
-    the values in the its surrounding box with the kernel.
-    The border coordinates need special treatment (e.g. continuation
+    the values in its surrounding box with the kernel.
+    The border coordinates need special treatment (\forexample continuation
     by 0).
   }
-  % \includegraphics[height=5em]{1D_convolution_layer.jpg}
   \pause
   \href{https://upload.wikimedia.org/wikipedia/commons/4/4f/3D_Convolution_Animation.gif}{(Animation)}
 \end{frame}
 
-\begin{frame}[<+->][t]
+\begin{frame}[t]
   \frametitle{Convolutional Layer}
   \mode<article>{A convolutional layer is effectively a locally
-    connected layer (each output pixel gets input only from nearby
-    input pixels) that heavily shares parameters.
+    connected layer, \idest each output pixel receives input only from
+    nearby input pixels, that in addition heavily shares parameters.
     It consists of several convolution operations in parallel,
     each followed by an activation function (usually non-linear)
     that is applied to every pixel.}
   \begin{description}
   \item<only@+-+(7)>[Convolution Hyperparameters:]~
-    \begin{itemize}
-    \item size of kernel (= weight-window)%
-      \mode<article>{, usually square 3x3 or 5x5}
-    \item padding variant (= border treatment)%
-      \mode<article>{, usually \enquote{same}, i.e. extend with 0
-        s.t. output dim = input dim} 
-    \item number of filters (= number of parallel convolutions)%
-      \mode<article>{; perform $i$ convolutions in parallel producing a
+    \begin{description}[number of filters]
+    \item[input dimension] without number of filters%
+      \mode<article>{; in keras choose \forexample a Conv2D layer for 2D images
+        (the 1--3 channels are the input filters)}
+    \item[size of kernel] = weight-window%
+      \mode<article>{; usually a $3\times3$- or $5\times5$-square}
+    \item[padding variant] = border treatment%
+      \mode<article>{; usually \enquote{same}, \idest extend the input
+        with zeros \suchthat \texttt{output\_dim} = \texttt{input\_dim}} 
+    \item[number of filters] = number of parallel convolutions%
+      \mode<article>{; perform $i$ convolutions in parallel producing an
         $i$-times larger output}
-    \item stride (= downsampling rate)%
-      \mode<article>{; skip all except every $i$th coordinate}
-      \visible<+->{\begin{figure}
-        \centering
-        \includegraphics[width=0.5\textwidth]{1D_convolution_stride.jpg}
-      \end{figure}}
-    \item dilation (=upsampling rate)
-      \mode<article>{; add $i$ virtual coordinates (wt. fixed value)
+    \item[stride] = downsampling rate%
+      % \mode<presentation>{\only<.->{
+      %     \parbox[c][1eM]{1em}{\includegraphics[height=3eM]{1D_convolution_stride}\hbox{}}
+      %   }
+      % }%
+      \mode<article>{; skip all except every $i$th coordinate (see \autoref{stride})}
+      \only<.>{\begin{figure}
+          \centering
+          \includegraphics[height=5eM]{1D_convolution_stride}
+          \mode<article>{\caption{
+              1D Convolution with stride 2; Note that this is the same
+              as a 1D Convolution without stride and then forgetting
+              every second pixel
+              \cite{cs231n}.
+              % MIT License
+            }\label{stride}
+          }
+        \end{figure}
+      }
+    \item[dilation] = upsampling rate%
+      \mode<article>{; add $i$ virtual coordinates with fixed value
         inbetween}
-    \item activation function \mode<article>{e.g. linear, ReLu}
-    \end{itemize}
-  \item<only@+>[Weights:] kernel values, bias
+    \item[activation function] \forexample linear, ReLu
+    \end{description}
+  \item<only@+>[Convolution Weights:] kernel values, bias
   \end{description}
+  \mode<article>{
+    \begin{alertblock}{How input filters are handled:}
+      If the input has more than one filter, \forexample the color channels
+      for images, then each output filter is made up by
+      \begin{enumerate}
+      \item Apply a separate kernel to each input filter
+      \item Sum up the results of all input filters to this one output filter
+      \end{enumerate}
+      Thus, the output dimension will be the input dimension plus the
+      number of output filters (and \emph{not} additionally plus the
+      number of input filters). 
+    \end{alertblock}
+  }
 \end{frame}
 
 \begin{frame}[<+->]
   \frametitle{Pooling Layer}
   \mode<article>{
-    Pooling is a way to downscale an image resp. summarize local sets
+    Pooling is a way to downscale an image respectively summarize local sets
     of features. Given a window size, the input to the pooling
     layer is disected into windows of this size (with or without
-    overlap) giving one output value per window calculated with a
-    fixed operation, e.g. maximum or average. This reduces the number
-    of features drastically, makes the network translation invariant
-    up to the window size, and prevents overfitting to some extend.}
-  
-  Usual pooling functions
+    overlap). Those are then processed using a fixed operation,
+    \forexample maximum or average, to yield one output value per
+    window. This
+    \begin{itemize}
+    \item reduces the number of features drastically,
+    \item makes the network translation invariant up to the window
+      size, and
+    \item prevents overfitting to some extend.
+    \end{itemize}
+  }
+  Usual pooling functions:
   \begin{itemize}
   \item Average Pooling (linear)
-    \mode<article>{gives the average value of each window} 
+    \mode<article>{gives the average value of each window.} 
   \item MaxPooling (non-linear)
-    \mode<article>{gives the maximum value of each window}
+    \mode<article>{gives the maximum value of each window (see \autoref{maxpooling}).}
     \visible<+->{\begin{figure}
-      \centering
-      \includegraphics[width=.5\textwidth]{max_pooling.png}
-      \mode<article>{\caption{2D-MaxPooling visualisation}}
-    \end{figure}}
+        \centering
+        \includegraphics[height=10eM]{max_pooling}
+        \mode<article>{\caption{2D-MaxPooling visualisation
+            \cite{cs231n}
+            % MIT License
+          }\label{maxpooling}}
+      \end{figure}}
     \mode<article>{MaxPooling cheaply introduces one more non-linearity
-      in the convolutional setup, and usually performs better than average
-      pooling (Wikipedia).}
+      to the convolutional setup, and usually performs better than average
+      pooling (according to Wikipedia).}
   \end{itemize}
 \end{frame}
 
@@ -229,27 +284,33 @@
 For details see \cite{resnet}.
 \begin{frame}
   \frametitle{(Deep) CNN}
-  \mode<article>{A deep convolutional neural network (CNN or ConvNet)
-    is a feedforward neural network consisting of:
+  \mode<article>{A deep convolutional neural network (DCNN, or simply
+    CNN or ConvNet) is a feedforward neural network consisting of:
     \begin{description}
     \item[Feature extraction backbone]
-      stack of alternating
+      a stack of alternating
       \begin{itemize}
       \item convolutional layers, and
       \item pooling layers
       \end{itemize}
     \item[Feature interpretation]
-      stack of fc neural network layers
+      a stack of fully connected neural network layers
       usually ending in a softmax layer for classification
     \end{description}
+    See \forexample \autoref{vgg} for a common CNN architecture.
+    Neural networks consisting mainly or solely of CNN parts are
+    sometimes called fully convolutional neural networks (FCNN).
   }
   \begin{figure}
-    \includegraphics[width=\textwidth]{vgg.png}
+    \includegraphics[width=\textwidth]{vgg}
     \mode<article>{
       \caption{VGG-19, a common ConvNet architecture developed by the
         Visual Geometry Group at Oxford University and predecessor of
         ResNet. Mind the alternating convolutional and pooling
-        sections as well as the fully connected layers at the end.}
+        sections as well as the fully connected layers at the end.
+        \cite{resnet}
+        % License: arXiv paper
+      }\label{vgg}
     }
   \end{figure}
 \end{frame}
@@ -258,65 +319,85 @@ For details see \cite{resnet}.
   \frametitle{Residual CNNs: ResNet}
   \mode<article>{Residual convolutional networks introduce identity
     shortcuts to circumvent the vanishing gradient problem of deep
-    networks.
+    networks, see \autoref{resnet}.
   }
   \only<+>{
     \begin{figure}
       \centering
-      \includegraphics[width=0.7\textwidth]{residual_convnet_layer.png}
+      \includegraphics[width=0.7\textwidth]{residual_convnet_layer}
       \mode<article>{\caption{
           Residual component of a RCNN network. Up to two layers get a
           parallel identity shortcut
           \cite{resnet}.
-        }}
+          % License: arXiv paper
+        }\label{resnet}
+      }
     \end{figure}
   }
   \mode<article>{
     The actual trick is to provide alternative shorter \enquote{paths}
-    for all weights. Intuitively this means that features detected in
-    any stage are available in any other stage.}
+    for all weights (see \autoref{resnetpaths}).
+    Intuitively this means that features detected in any stage are
+    available in any other stage.}
   \only<+>{
     \begin{figure}
-      \includegraphics[width=\textwidth]{residual_convnet_layer-paths.png}
+      \includegraphics[width=\textwidth]{residual_convnet_layer-paths}
       \mode<article>{\caption{
           Impact of residual blocks within a network on paths through
           the network
           \cite{resnet}.
-        }}
+          % License: arXiv paper
+        }\label{resnetpaths}
+      }
     \end{figure}
   }
+  \mode<article>{A nice description of this network architecture using
+    shortcuts is, that not every layer introduces new features, but the
+    first layer already roughly correctly describes the needed features,
+    and any proceeding layer adds a little correction to that. The
+    later the layer, the smaller the corrections of the feature map will
+    have to be. This is contrary to the usual architectures, where in
+    every stage the features get processed to yield some completely new
+    set of features.}
 \end{frame}
 
 \begin{frame}
   \mode<article>{
-    Best performance for residual modules was found for shortcutting 2
-    stacks of linearity and non-linearity.
-    ResNet is an example of a specific
-    such network (usually 50 or 101 convolutional layers).
+    Best performance for residual modules was found for shortcutting
+    two layers.
+    
+    \emph{ResNet} is an example of a specific such network (usually 50
+    or 101 convolutional layers). See \autoref{comparisonresnetvgg}
+    for a comparison of ResNet with the previously discussed VGG network.
   }
   \begin{figure}
-    \rotatebox{90}{\includegraphics[height=\textwidth]{comparison_convnets.png}}
+    \rotatebox{90}{\includegraphics[height=\textwidth]{comparison_convnets}}
     \mode<article>{\caption{
         Comparison of VGG and ResNet: Residuals enable buiding much
         deeper convolutinal networks
         \cite{resnet}.
-      }}
+        % License: arXiv paper
+      }\label{comparisonresnetvgg}
+    }
   \end{figure}
 \end{frame}
 
 \begin{frame}
   \mode<article>{
-    ResNeXt splits the shortcutted parts into several parallel parts
-    to get even more performance without further gradient vanishing.
+    \emph{ResNeXt} splits the shortcutted parts into several parallel
+    parts (\autoref{resnext}) to get even better performance without
+    further gradient vanishing.
   }
   \begin{figure}
     \centering
-    \includegraphics[width=0.7\textwidth]{resnext_convnet_layer.png}
+    \includegraphics[width=0.7\textwidth]{resnext_convnet_layer}
     \mode<article>{\caption{
         Comparison of a normal residual block with one or
         ResNeXt. ResNeXt shortcuts many parallel branches
         \cite{resnet}.
-      }}
+        % License: arXiv paper
+      }\label{resnext}
+    }
   \end{figure}
 \end{frame}
 
@@ -325,13 +406,19 @@ For details see \cite{resnet}.
   \mode<article>{
     Feature Pyramid Networks do not only use residuals to make earlier
     features more accessible in the final prediction block, but apply
-    a prediction block at every feature stage. This makes the network
-    more invariant to the scale of the feature to be detected.
+    a prediction block at every feature stage
+    (see \autoref{fpn} and \autoref{fpnresnet}).
+    This makes the network more invariant to the scale of the feature
+    to be detected.
   }
   \begin{figure}
     \centering
-    \includegraphics[width=0.6\textwidth]{fpn.png}
-    \mode<article>{\caption{FPN setup principle}}
+    \includegraphics[width=0.6\textwidth]{fpn}
+    \mode<article>{\caption{FPN setup principle
+        \cite{fpn}
+        % License: arXiv paper
+      }\label{fpn}
+    }
   \end{figure}
 \end{frame}
 \begin{frame}
@@ -340,13 +427,15 @@ For details see \cite{resnet}.
     \includegraphics[width=0.6\textwidth]{fpn_with_resnet}
     \mode<article>{\caption{
         FPN with ResNet \cite{singleshotdetectors}
-      }}
+        % License: arXiv paper
+      }\label{fpnresnet}
+    }
   \end{figure}
 \end{frame}
 
 
 \section{Model}
-,\subsection{Overview}
+\subsection{Overview}
 \begin{frame}[<+->]
   \frametitle{Predecessor Problems}
   \begin{description}
@@ -397,7 +486,7 @@ For details see \cite{resnet}.
     \mode<presentation>{same as for Object Detection}
     \mode<article>{The architecture should be chosen as for a
       convolutional backbone of an analogous Object Detection task,
-      e.g. ResNet with FPN for natural image processing. See \ref{backbonetraining}.}
+      \forexample ResNet with FPN for natural image processing. See \ref{backbonetraining}.}
   \end{description}
 \end{frame}
 
@@ -406,33 +495,33 @@ For details see \cite{resnet}.
   \frametitle{Predecessors/Alternatives}
   \mode<article>{See \cite{regionproposaloverview} for a more detailed overview.}
   \begin{description}
-  \item[Pixel Merging] (e.g. SelectiveSearch)
+  \item[Pixel Merging] (\forexample SelectiveSearch)
     \mode<article>{Merge pixels with neighbors to objects by
       manual or learned rules, starting at more or less
       intelligently chosen starting pixels.
       The computation is usually very costful.}
-  \item[Window scoring] (e.g. Objectness)
+  \item[Window scoring] (\forexample Objectness)
     \mode<article>{Obtain a fixed or preselected set of candidate
       windows and learn/apply an objectness scoring algorithm.
       The localisation accuracy is usually low and the cost is
       proportional to the number of window candidates.
       Scale invariance is usually ensured by conducting the process
       several times for differently sized windows/image resize scales.}
-  \item[Separate NN] (e.g. Multibox)
+  \item[Separate NN] (\forexample Multibox)
     \mode<article>{Separately train a complete neural network for
       region proposals. Usually very costful to train.}
   \end{description}
 \end{frame}
 
-\begin{frame}[<+->]
-  \frametitle{Main Ideas of the Mask-RCNN Approach}
+\begin{frame}
+  \frametitle{Main Ideas of the Mask R-CNN/Faster R-CNN Approach}
   Window scoring with enhancements:
   \begin{description}[]
   \item[Decoupling] of classification and window proposals
   \item[All Scales at once] using different candidate window shapes
   \item[Bounding box correction] in \emph{parallel} to scoring 
   \item[Excessive weight sharing] amongst same shapes
-  \item[RoI-Pooling = Feature sharing] i.e. use convolutional features
+  \item[RoI-Pooling] \idest use convolutional features
     from backbone and pool each proposal window to fixed size
   \end{description}
 \end{frame}
@@ -443,46 +532,59 @@ For details see \cite{resnet}.
   \item[Shared Conv Layer]
     Sliding window on feature space
     with fixed set of anchor shapes per window
-    \mode<article>{(=base box shape proposals)}
+    \mode<article>{(=base box shape proposals), see \autoref{anchorshapes}}
     \only<.>{
       \begin{figure}
         \centering
         \hbox{
-          \parbox[c]{0.3\textwidth}{\includegraphics[width=0.3\textwidth]{rpn_components}\hbox{}}~
-          \parbox[c]{0.65\textwidth}{\includegraphics[width=0.65\textwidth]{anchors}\hbox{}}
-        }
-        \mode<article>{\caption{
-            Left: RPN components \cite{singleshotdetectors};
-            Right: Anchor shapes per center point i.e. feature map pixel
-            \cite{fasterrcnn}.
-          }}
+          \parbox[c]{0.3\textwidth}{\includegraphics[width=0.3\textwidth]{rpn_components}
+            \mode<article>{\caption{
+                RPN components \cite{singleshotdetectors}
+                % License: arXiv paper
+              }\label{rpncomponents}
+            }
+          }~
+          \parbox[c]{0.65\textwidth}{\includegraphics[width=0.65\textwidth]{anchors}
+            \mode<article>{\caption{
+                Anchor shapes per center point \idest feature map
+                pixel \cite{fasterrcnn}.
+                % License: arXiv paper
+              }\label{anchorshapes}
+            }
+          }
+      }
       \end{figure}
     }
   \item[\cls{}, \reg{}] Per window and anchor shape do in parallel
+    \mode<article>{(see \autoref{rpncomponents})}
     \begin{description}
     \item[objectness score] (\cls{})
       \mode<article>{This is analogous to the window scoring method
-        and provides the rough region proposals. The main difference
-        is the high weight sharing: Anchors of the same shape share
-        their scoring algorithm, thus ensuring high translation
-        invariance (it does not matter, in which corner of the image
-        the object is) and high scale invariance (choose anchor shapes
-        of different scale).}
+        and yields for each region a score on how likely it is that
+        this region contains an object.
+        The main difference is the \emph{high weight sharing}:
+        Anchors of the
+        same shape share their scoring algorithm, thus ensuring high
+        translation invariance (it does not matter, in which corner of
+        the image the object is) and high scale invariance (choose
+        anchor shapes of different scale).}
     \item[coordinate correction] (\reg{})
       \mode<article>{This part tries to overcome the low localisation
         accuracy of usual window scoring and thus enables to use much
-        less candidate windows (anchors), as only the aspect ration
-        has to fit very roughly.}
+        less candidate windows (anchors), as the shape only has to fit
+        very roughly. See \autoref{ex:rpnreg}.}
     \end{description}
     \only<.>{
       \begin{figure}
         \centering
-        \includegraphics[height=0.3\textwidth]{rpn_reg_example}
+        \includegraphics[height=7eM]{rpn_reg_example}
         \mode<article>{\caption{
             Example of a bounding box correction by the \reg{} part
             of a region propsal network.
             \cite{singleshotdetectors}
-          }}
+            % License: arXiv paper
+          }\label{ex:rpnreg}
+        }
       \end{figure}
     }
     \mode<article>{The main idea behind this parallel approach is,
@@ -505,58 +607,61 @@ For details see \cite{resnet}.
     \includegraphics[width=0.7\textwidth]{rpn_in_network}
     \mode<article>{\caption{
         Location of the RPN component within the network
-      }}
+        \cite{fasterrcnn}
+        % License: arXiv paper
+      }
+    }
   \end{figure}
 \end{frame}
 
 \begin{frame}[t]
-  \frametitle{Coordinate and RPN \reg{} output encoding}
+  \frametitle{Coordinate Encoding}
   \mode<article>{All box coordinates are normalized,
-    i.e. $x=\dfrac{x}{\text{image\_width}}$,
-    $y=\dfrac{y}{\text{image\_height}}$.}
+    \idest $x=\dfrac{x_\text{abs}}{\text{\small\texttt{image\_width}}}$,
+    $y=\dfrac{y_\text{abs}}{\text{\small\texttt{image\_height}}}$.}
   \begin{description}[<only@+>]
-  \item[Box coordinate] encoding (all normalized):
-    \begin{itemize}[<.->]
-    \item[$(x_1,y_1$] \texttt{\# \small upper left corner}
-    \item[$x_2,y_2)$] \texttt{\# \small lower right corner}
-    \end{itemize}
-    
+  \item[Box coordinate] (= Proposal Layer output) encoding, all normalized:
+  \begin{alignat*}{2}
+    \Big(\,
+    & x_1,y_1
+    &&\text{\ttfamily\# \small upper left corner}\\
+    &x_2,y_2\,\Big)\quad
+    &&\text{\ttfamily\# \small lower right corner}
+  \end{alignat*}
   \item[Coordinate correction] (=\reg{} output) encoding:
-    \begin{itemize}[<.->]
-    \item[$\Big(dx,$]
-      \texttt{\# \small $\frac
+    \begin{alignat*}{2}
+      \Big(\,
+      &dx,
+      &&\text{\ttfamily\# \small $\textstyle\frac
         {\text{centerpoint x-difference}}
-        {\text{anchor width}}$}
-      $\phantom{\Big|}$
-    \item[$dy,$]
-      \texttt{\# \small $\frac
+        {\text{anchor width}}$}\\
+      &dy,
+      &&\text{\ttfamily\# \small $\textstyle\frac
         {\text{centerpoint y-difference}}
-        {\text{anchor height}}$}
-      $\phantom{\Big|}$
-    \item[$\log(dw),$]
-      \texttt{\# \small $\frac
+        {\text{anchor height}}$}\\
+      &\log(dw),
+      &&\text{\ttfamily\# \small $\log\left(\textstyle\frac
         {\text{ground-truth box width}}
-        {\text{anchor width}}$}
-      $\phantom{\Big|}$
-    \item[$\log(dh)\Big)$]
-      \texttt{\# \small $\frac
-        {\text{ground-truth box height}}
-        {\text{anchor height}}$}
-    \end{itemize}
+        {\text{anchor width}}\right)$}\\
+      &\log(dh)\,\Big)\quad
+      &&\text{\ttfamily\# \small $\log\left(\textstyle\frac
+         {\text{ground-truth box height}}
+         {\text{anchor height}}\right)$}
+    \end{alignat*}
   \end{description}
 \end{frame}
 
 \begin{frame}
-  \frametitle<presentation>{Metrics}
+  \frametitle{Metrics}
   \mode<article>{The metric for measuring how well a proposal window
     fits for a real bounding box is the \emph{intersection over union
-      ratio (IoU)}. For two measurable subsets $A$, $B$ of $\R^2$ this
-    is defined as}
-  \mode<presentation>{Metric for matching:}
+      ratio} (IoU). For two measurable subsets $A$, $B$ of $\R^2$ this
+    is defined as}%
+  \mode<presentation>{Metric for matching:}%
   \begin{gather*}
+    \SwapAboveDisplaySkip
     \IoU(A, B) \coloneqq \dfrac{\text{Intersection Area}}{\text{Union Area}}
   \end{gather*}
-  % TODO: IoU visualization?
 \end{frame}
 
 \begin{frame}[<+->]
@@ -565,19 +670,21 @@ For details see \cite{resnet}.
     if this is positive, a corresponding ground-truth bounding box
     (else the ground-truth bounding box is set to all 0):}
   \begin{description}[-1=no object]
-  \item[object=1] with ground-truth box $b$ if
+  \item[1: object] with ground-truth box $b$ if
     \begin{itemize}
-    \item \mode<article>{it has the} best $\IoU$ for $b$, else if
-    \item $\IoU$ with $b$ $\geq$ 0.3
+    \item it has best $\IoU$ for $b$, else if
+    \item $\IoU$ for $b$ $\geq 0.7$
     \end{itemize} 
-  \item[no object=-1] if not pos. and $\IoU\leq 0.3$
-  \item[neutral=0] else (excluded from training)
+  \item[-1: no object] if not positive and $\IoU\leq 0.3$
+  \item[0: neutral] else (excluded from training)
   \end{description}
   \mode<article>{All neutral boxes get completely excluded from
-    training resp. from the loss calculation.}
+    training respectively from the loss calculation.}
   Balance positive and negative boxes for training!
-  \mode<article>{This can e.g. be done by setting most of the actually
-    negative anchors to neutral to be excluded from training.}
+  \mode<article>{This is important, as there usually will be by far
+    more non-object anchor boxes than positive ones. Balancing can
+    \forexample be done by setting most of the actually negative
+    anchors to neutral \suchthat they get excluded from training.}
 \end{frame}
 
 \begin{frame}[t]
@@ -586,9 +693,10 @@ For details see \cite{resnet}.
   \item[Sliding window]
     \mode<presentation>{Shared Conv layer with \enquote{valid}-padding}
     \mode<article>{This is implemented by a shared convolutional
-      layer that naturally gives one value per sliding window (=kernel
-      location). The padding is \enquote{valid} to exclude anchors
-      crossing image borders (see \reg{}-Training).}
+      layer that naturally gives one value per sliding window (= kernel)
+      location. The padding is \enquote{valid} to exclude anchors
+      crossing image borders (see Coordinate Correction details below
+      and \reg{}-Training).}
   \item[Objectness classification] Conv layer with
     \begin{itemize}[<.->]
     \item $1\times1$-sized kernel
@@ -603,7 +711,7 @@ For details see \cite{resnet}.
     \item $4\times\text{(number of anchors)}$ filters:
       $(dx,dy,dw,dh)$ coordinate correction for each anchor
     \end{itemize}
-    \emph{Loss:} smooth $L_1$-loss\mode<article>{\footnote{
+    \emph{Loss:} smooth $L_1$-loss\mode<article>{\footnote{%
         The smooth $L_1$-loss takes the smoothed out absolute value
         \begin{gather*}
           |d|_\text{smooth} \coloneqq \begin{cases}
@@ -611,20 +719,21 @@ For details see \cite{resnet}.
             |d|_1 & \text{d>1}
           \end{cases}
         \end{gather*}
-        This is differentiable and the loss is more robust to
-        outliers than $L_2$.
-      }}
-    for positive anchors that do not cross image bounds
+        Other than the usual absolute value this is differentiable and
+        the loss is more robust to outliers than $L_2$.
+      }}%
+    \mode<presentation>{for positive anchors that do not cross image bounds}
     \mode<article>{\par
-      The border-crossing anchors are excluded because:
+      The border-crossing anchors should be excluded because:
       \begin{quote}
-        [They would] introduce large, difficult to correct error terms in
-        the objective, and training does not converge.
+        \enquote{[They would] introduce large, difficult to correct error terms in
+        the objective, and training does not converge.} \cite{fasterrcnn}
       \end{quote}
-      This is simply implemented by a \enquote{valid}-padding for the
-      sliding window; or alternatively setting their ground-truth
-      objectness score to neutral (thus they are ignored during
-      training, see \cls{}-Training).
+      This exclusion can simply implemented by a
+      \enquote{valid}-padding for the sliding window as described
+      above;
+      or alternatively set their ground-truth objectness score to
+      neutral (thus they are ignored during training).
     }
   \item<only@+->[Proposal selection]~
     \begin{enumerate}[<+->]
@@ -634,13 +743,15 @@ For details see \cite{resnet}.
       \mode<article>{This is necessary, because the coordinate
         corrections may well exceed the sliding window size, in which
         the original anchor lies. This makes sense, because one can
-        suggest the size of an object without seeing it resp. its
-        surroundings completely. However, anchors at the }
+        suggest the size of an object without seeing it---respectively its
+        surroundings---completely. However, anchor boxes exceeding the
+        image bounds by this need to be clipped. 
+      }
     \item Non-maximum suppression:
       \begin{enumerate}
-      \item Sort by score
-      \item Reject boxes which have high IoU with better scored ones
-      \item Trim to best \emph{num\_proposals}
+      \item Sort by score.
+      \item Reject boxes which have high IoU with better scored ones.
+      \item Trim to best \texttt{num\_proposals} proposals.
       \end{enumerate}
     \end{enumerate}
   \end{description}
@@ -648,7 +759,7 @@ For details see \cite{resnet}.
 
 \subsection{RoI-Pooling}
 Region of Interest (RoI) pooling is the process of
-resizing the output of a proposed window to the frontends input
+resizing the output of a proposed window to the frontend's input
 shape.
 This is done by uniformly splitting the window into rectangular
 regions, one for each desired output pixel, and pooling each
@@ -656,6 +767,12 @@ rectangle to this one pixel. As this means downscaling, all of the
 window outputs have to be larger than the frontend's input shape.
 \begin{frame}
   \frametitle<presentation>{RoI-Pooling}
+  \frametitle<article>{Standard RoI-Pooling}
+  \mode<article>{The usual RoI-Pooling method respects pixel bounds
+    for selecting the rectangles, thus the size of the rectangles may
+    vary by one pixel in width or height in the end, see
+    \autoref{roipooling}.
+    }
   \begin{figure}
     \mode<presentation>{
       \parbox[c]{0.5\textwidth}{
@@ -676,8 +793,12 @@ window outputs have to be larger than the frontend's input shape.
           Visualization of Region of Interest Pooling.
           From top to bottom: Selection of a window; splitting of the
           window into roughly equal rectangular sections (round half
-          width/height to full pixels); Max-Pooling output of the segmentation
-        }
+          width/height to full pixels); Max-Pooling output of the
+          segmentation
+          \href{https://commons.wikimedia.org/wiki/File:RoI_pooling_animated.gif}{(Wikimedia
+            Commons)}
+          % License: CC BY 4.0
+        }\label{roipooling}
       \end{center}
     }
   \end{figure}   
@@ -687,14 +808,15 @@ window outputs have to be larger than the frontend's input shape.
   \frametitle{RoI-Align}
   \mode<presentation>{Bilinear interpolation instead of cropping:}
   
-  \mode<article>{RoI-align suggests to avoid any cropping/rounding
+  \mode<article>{RoI-Align suggests to avoid any cropping/rounding
     when disecting the windows output into rectangles for
-    pooling. This can be done by calculating the rectangle values via
-    bilinear interpolation instead of cropping to full pixels followed
-    by e.g. average pooling.
+    pooling. This then results in equally shaped rectangle pooling regions.
+    This can be done by calculating the rectangle values via
+    bilinear interpolation instead of cropping to full pixels
+    (see \autoref{roialign}).
     Using RoI-Align, the feature maps from the bounding boxes
     evaluated by the frontend are more accurately aligned with the
-    original image and masks get better.}
+    original image and the masks get better \cite{maskrcnn}.}
   \begin{figure}
     \centering
     \includegraphics{roialign}
@@ -702,7 +824,10 @@ window outputs have to be larger than the frontend's input shape.
         Visualization of RoI-Align: A pixel on the output feature map
         is bilinearly interpolated from nearby pixels in the input
         feature map.
-      }}
+        \cite{maskrcnn}
+        % License: arXiv paper
+      }\label{roialign}
+    }
   \end{figure}
 \end{frame}
 
@@ -719,6 +844,7 @@ window outputs have to be larger than the frontend's input shape.
 
 \begin{frame}[t]
   \frametitle{Architecture}
+  \mode<article>{See \autoref{frontendarch} for a quick overview.}
   \only<+>{
     \begin{figure}
       \centering
@@ -727,13 +853,16 @@ window outputs have to be larger than the frontend's input shape.
           Frontend architecture overview;
           in this case a ResNet-FPN backend is assumed.
           Note the three mostly independent prediction branches.
-        }}
+          \cite{maskrcnn}
+          % License: arXiv paper
+        }\label{frontendarch}
+      }
     \end{figure}
   }
   \begin{description}[<only@+>]
   \item[Classification]
     fully connected layers ending in softmax
-    (include class \enquote{No object})%
+    (include class \enquote{no object})%
     \mode<article>{\par
       The network should look like the network head used for the
       corresponding object detection task, see Backbone Pretraining.
@@ -749,7 +878,7 @@ window outputs have to be larger than the frontend's input shape.
       \item sigmoid activation
       \end{itemize}
       \mode<article>{This means, as for the RPN, classification and
-        mask (=per pixel scoring) are handled independently.
+        mask (= per pixel scoring) are handled independently.
         Tests showed, this works much better than sharing filters for
         all classes and apply a softmax with multinomial cross-entropy
         loss, because here mask results from several classes influence
@@ -770,7 +899,7 @@ window outputs have to be larger than the frontend's input shape.
   \mode<article>{Even though the training could be conducted on the
     complete network at once, this is not advisable as the different
     components would influence each other heavily. Thus training is
-    splittet in several steps:}
+    splittet into several steps:}
   \begin{enumerate}
   \item Backbone
   \item RPN
@@ -779,7 +908,7 @@ window outputs have to be larger than the frontend's input shape.
 \end{frame}
 
 \subsection{Backbone Pretraining}\label{backbonetraining}
-\begin{frame}[<+->][t]
+\begin{frame}[t]
   \frametitle<presentation>{Backbone Pretraining}
   \mode<article>{To train the backbone, a separate ConvNet model is
     set up with the convolutional backbone to train as backbone and a
@@ -789,7 +918,7 @@ window outputs have to be larger than the frontend's input shape.
     \item Backbone (Conv \& Pooling)
     \item Dense Layers
     \item Classification Softmax-Layer
-      \mode<article>{Here the \enquote{No object} class should already
+      \mode<article>{where the \enquote{no object} class should already
         be respected and trained.}
     \end{enumerate}
   \end{block}
@@ -797,7 +926,7 @@ window outputs have to be larger than the frontend's input shape.
   \begin{block}{Training Input}
     \begin{description}
     \item[inputs] one-object images
-      (ca. size of later bounding boxes)
+      (ca.\ the size of later bounding boxes)
     \item[labels] the single objects' labels
     \end{description}
   \end{block}
@@ -808,33 +937,39 @@ window outputs have to be larger than the frontend's input shape.
   \frametitle<presentation>{Alternating Training}
   \mode<article>{One further special thing about image segmentation
     with a region proposal network is the preferable training routine,
-    where region proposal network and the frontend are trained
+    where the RPN and the frontend are trained
     alternately. The proposed order is:
   }
-  (after RPN is trained)
+  (after RPN is pretrained)
   \begin{enumerate}
-  \item Frontend: RPN fixed, backbone not shared
-  \item RPN: frontend fixed, shared backbone fixed
-  \item Frontend: RPN fixed, shared backbone fixed
-  \item \dots \mode<article>{(not much further improvement with more
-      repetitions)}
+  \item Frontend (RPN fixed, backbone not shared)
+  \item RPN (frontend fixed, shared backbone fixed)
+  \item Frontend (RPN fixed, shared backbone fixed)
+  \item \dots~\mode<article>{\textit{not much further improvement with more
+      repetitions}}
   \end{enumerate}
 \end{frame}
 
-\section*{Implementation Review}
+\section{Implementation Review}
 \subsection{Source Code}
 \begin{frame}
-  \frametitle<presentation>{Example Sources}
+  \frametitle{Example Sources}
   \begin{itemize}
+  \item \href{https://github.com/facebookresearch/Detectron}
+    {Caffe2 reference implementation} by
+    \href{https://github.com/facebookresearch/Detectron}{facebookresearch}:
+    \cite{maskrcnncaffe}
   \item
     \href{https://github.com/matterport/Mask_RCNN/blob/master/samples/demo.ipynb}
-    {Keras implementation by matterport}: \cite{maskrcnnkeras}
-  \item Easy example for handwritten number detection using
-    autogenerated data based on MNIST: \href{https://github.com/gesina/simple_mask_rcnn}{github}
+    {Keras implementation} by \href{https://matterport.com/}{matterport}:
+    \cite{maskrcnnkeras}
+  \item Example for handwritten number detection using
+    autogenerated data based on MNIST:
+    \href{https://github.com/gesina/simple_mask_rcnn}{github}
   \end{itemize}
 \end{frame}
 
-\begin{frame}[<+->]
+\begin{frame}
   \frametitle{Keras Implementation Specialties}
   \begin{itemize}
   \item Use the functional API!
@@ -843,56 +978,62 @@ window outputs have to be larger than the frontend's input shape.
     \item[Loss Layers] custom losses
     \item[Proposal Layer] select RPN proposals
     \item[RoI-Pooling Layer] reshape proposals and mask labels
-      (can use
+      (\forexample use tensorflow function
       \href{https://www.tensorflow.org/api_docs/python/tf/image/crop_and_resize}
       {\texttt{tf.crop\_and\_resize()}})
     \end{description}
-  \item Separate models for training and inference
-    \mode<article>{Since in keras a specified loss will be applied to
+  \item Separate models for training and inference%
+    \mode<article>{: Since in keras a specified loss will be applied to
       all outputs, one needs to use the more internal
       \texttt{model.add\_loss()} function as a workaround.
       This function accepts a layer whose output will be added to the
       overall loss.
       As the loss layers need the ground-truth labels as inputs, one
-      has to define separate models for training and inference.}    
+      has to define separate models for training and inference and
+      initialize the inference model with the trained weights of the
+      other one.}
   \end{itemize}
 \end{frame}
 
 \subsection{Lessions learned}
 \begin{frame}[allowframebreaks]
   \frametitle<presentation>{Lessions Learned}
-  \begin{itemize}
+  \begin{itemize}[<.->]
   \item Always double-check and note down tensor/array dimensions;
     mind the padding for convolutions.
-  \item Always double-check and test your algorithms.
   \item Always have a look at \emph{all} input and output data:
     \begin{itemize}
-    \item Do they roughly make sense, e.g. do positive classes have
+    \item Do they roughly make sense, \forexample do positive classes have
       different probability output than negative ones?)
     \item Are there error patterns?
     \end{itemize}
-    Visualization is your friend. But it will contain bugs, too.
+    Visualization is your friend. But it will definitely contain bugs, too.
+  \item Always double-check and test your algorithms.
+  \item Always double-check your parameters: Do they fit for your data?
+  \item Convolution is very geometric: Depict your sliding windows,
+    anchor shapes, and downscaling factor(s) to check whether they
+    make sense with your data/object sizes.
   \item Directly document and update all input and output formats of
-    functions. Resp. in general: Keep your code VERY clean and understandable.
-  \item Convolution is very geometric: Depict your sliding windows and
-    downscaling factor(s) to check whether they make sense with your
-    data/object sizes.
-  \item Mind your RAM when optimizing data generation/tagging
+    functions---with a good IDE this makes your life much easier.
+    (And, of course, follow the master rule: Keep your code clean and
+    understandable.)
+  \item Mind your RAM when optimizing data generation/tagging.
   \item Check your loss and validation values; Does the model actually
     get better?
-  \item The deeper, the much more time;
-  \item Make data as easy (small) as possible; if you can still
-    classify, the network can do, too (e.g. grayscale instead of several
-    color channels).
+  \item The deeper the network, the \emph{much} more time training
+    will take on CPU.
+  \item Make data as easy (small) as possible; if a human can still
+    classify the data in that format, the network can do so, too.
+    \Forexample grayscale instead of several color channels.
   \end{itemize}
 \end{frame}
 
 \nocite{*}
-\printbibliography[heading=none]
+\printbibliography
 
 \end{document}
 
 %%% Local Variables:
 %%% mode: latex
-%%% TeX-master: "image_segmentation-beamer"
+%%% TeX-master: "image_segmentation-article"
 %%% End:

@@ -22,8 +22,9 @@ ignorenonframetext, noamsthm, notheorems,%
 }
 \AtBeginSection{
   \frame{\sectionpage\par\vspace{1eM}\tableofcontents[sections=\value{section}]}
-%  \frame[t]{\frametitle{Outline}\tableofcontents[sections=\value{section}]}
+  % \frame[t]{\frametitle{Outline}\tableofcontents[sections=\value{section}]}
 }
 
+\beamerdefaultoverlayspecification{<+->}
 
 \input{image_segmentation.tex}

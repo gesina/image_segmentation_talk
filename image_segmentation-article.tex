@@ -1,4 +1,4 @@
-\documentclass[english, parskip=half]{scrartcl}
+\documentclass[english, bibliography=totoc]{scrartcl}
 \usepackage[noamsthm, notheorems]{beamerarticle}
 \usepackage[%
 colorlinks=true, linkcolor=blue,
@@ -6,7 +6,7 @@ pdfauthor={Gesina Schwalbe},
 pdftitle={Image Segmentation 2018 with Mask R-CNN},
 ]{hyperref}
 
-\setjobnamebeamerversion{image_segmentation-beamer}
+\setjobnamebeamerversion{image_segmentation-article}
 
 \AtBeginDocument{\raggedbottom}
 
@@ -24,8 +24,8 @@ pdftitle={Image Segmentation 2018 with Mask R-CNN},
 \setbeamertemplate{block alerted end}{}
 
 \setbeamertemplate{frametitle}{\subsubsection{\insertframetitle}}
-\setbeamertemplate{frame begin}{}
-\setbeamertemplate{frame end}{}
+%\setbeamertemplate{frame begin}{}
+%\setbeamertemplate{frame end}{}
 }
 
 \input{image_segmentation}
